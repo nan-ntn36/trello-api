@@ -9,4 +9,7 @@ Router.route('/')
     res.status(StatusCodes.OK).json({ message: 'Note: API get list boards' });
   })
   .post(boardValidation.createNew, boardController.createNew); // kêu về tầng validation -> sau đó kêu tầng controller
+
+Router.route('/:id').get(boardController.getDetails).put();
+
 export const boardRoute = Router;

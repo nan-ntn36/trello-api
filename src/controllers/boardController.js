@@ -15,4 +15,17 @@ const createNew = async (req, res, next) => {
   }
 };
 
-export const boardController = { createNew };
+// query tổng hợp (aggregate)
+
+const getDetails = async (req, res, next) => {
+  try {
+    const boardId = req.params.id;
+    const board = await boarService.getDetails(boardId);
+
+    res.status(StatusCodes.OK).json(board);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const boardController = { createNew, getDetails };
