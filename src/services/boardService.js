@@ -51,4 +51,4 @@ const getDetails = async (boardId) => {
   }
 };
 
-export const boarService = { createNew, getDetails };
+export const boardService = { createNew, getDetails };

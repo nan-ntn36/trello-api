@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
 import { StatusCodes } from 'http-status-codes';
-import { boarService } from '~/services/boardService';
+import { boardService } from '~/services/boardService';
 
 const createNew = async (req, res, next) => {
   try {
     // điều hướng dữ liệu sang services để xữ lý logic
-    const createBoard = await boarService.createNew(req.body);
+    const createBoard = await boardService.createNew(req.body);
     console.log(createBoard);
     //Có kết quả thì trả về phía client
     res.status(StatusCodes.CREATED).json(createBoard);
@@ -20,7 +20,7 @@ const createNew = async (req, res, next) => {
 const getDetails = async (req, res, next) => {
   try {
     const boardId = req.params.id;
-    const board = await boarService.getDetails(boardId);
+    const board = await boardService.getDetails(boardId);
 
     res.status(StatusCodes.OK).json(board);
   } catch (error) {
