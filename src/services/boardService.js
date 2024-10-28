@@ -3,6 +3,7 @@ import { slugify } from '~/utils/formatters';
 import { boardModel } from '~/models/boardModel';
 import ApiError from '~/utils/ApiError';
 import { StatusCodes } from 'http-status-codes';
+import { cloneDeep } from 'lodash';
 
 const createNew = async (reqBody) => {
   try {
@@ -26,7 +27,25 @@ const getDetails = async (boardId) => {
     const board = await boardModel.getDetails(boardId);
     if (!board) throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found!');
 
-    return board;
+    // clone ra 1 mảng mới không ảnh hưởng đến dữ liệu ban đầu
+    const resBoard = cloneDeep(board);
+    // đưa cards về đúng column của nó
+    resBoard.columns.forEach((column) => {
+      // cách 1
+      // column.cards = resBoard.cards.filter(
+      //   (card) => card.columnId.toString() === column._id.toString()
+      // );
+
+      // cách 2: dùng .equals này là bởi vì dữ liệu của ta đều là ObjectId nên là thằng mongoDb có support hàm .equals (mongodb) này.
+      column.cards = resBoard.cards.filter((card) =>
+        card.columnId.equals(column._id)
+      );
+    });
+    // Xóa đi mảng cards nằm cùng cấp với columns
+    delete resBoard.cards;
+
+    // trả dữ liệu mới về
+    return resBoard;
   } catch (error) {
     throw error;
   }
