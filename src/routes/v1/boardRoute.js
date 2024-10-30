@@ -10,6 +10,8 @@ Router.route('/')
   })
   .post(boardValidation.createNew, boardController.createNew); // kêu về tầng validation -> sau đó kêu tầng controller
 
-Router.route('/:id').get(boardController.getDetails).put();
+Router.route('/:id')
+  .get(boardController.getDetails)
+  .put(boardValidation.update, boardController.update);
 
 export const boardRoute = Router;

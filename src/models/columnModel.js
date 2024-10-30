@@ -31,10 +31,14 @@ const validateBeforCreate = async (data) => {
 const createNew = async (data) => {
   try {
     const validData = await validateBeforCreate(data);
-    const createBoard = await GET_DB()
+    const newColumnToAdd = {
+      ...validData,
+      boardId: new ObjectId(validData.boardId),
+    };
+    const createColumn = await GET_DB()
       .collection(COLUMN_COLLECTION_NAME)
-      .insertOne(validData);
-    return createBoard;
+      .insertOne(newColumnToAdd);
+    return createColumn;
   } catch (error) {
     throw new Error(error);
   }
@@ -53,9 +57,35 @@ const findOneById = async (id) => {
   }
 };
 
+// push giá trị columnId vào cuối mảng columnOrderIds
+const pushCardOrderIds = async (card) => {
+  try {
+    const result = await GET_DB()
+      .collection(COLUMN_COLLECTION_NAME)
+      .findOneAndUpdate(
+        {
+          _id: new ObjectId(card.columnId),
+        },
+        {
+          // thêm dữ liệu vào columnOrderIds
+          $push: { cardOrderIds: new ObjectId(card._id) },
+        },
+        {
+          // trả bản ghi mới nhất khi cập nhật
+          returnDocument: 'after',
+        }
+      );
+
+    return result;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 export const columnModel = {
   COLUMN_COLLECTION_NAME,
   COLUMN_COLLECTION_SCHEMA,
   findOneById,
   createNew,
+  pushCardOrderIds,
 };
