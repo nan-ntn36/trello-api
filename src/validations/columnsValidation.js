@@ -22,4 +22,30 @@ const createNew = async (req, res, next) => {
   }
 };
 
-export const columnsValidation = { createNew };
+const update = async (req, res, next) => {
+  const correctCodition = Joi.object({
+    boardId: Joi.string()
+      .pattern(OBJECT_ID_RULE)
+      .message(OBJECT_ID_RULE_MESSAGE),
+    title: Joi.string().min(3).max(50).trim().strict(),
+    cardOrderIds: Joi.array().items(
+      Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
+    ),
+  });
+
+  try {
+    // set abortEarly: false chỉ định, trường hợp có nhiều lỗi validation thì trả về tất cả lỗi
+    // Đối với 1 số trường hợp update cho phép allowUnknown không cân đẩy 1 số filed lên
+    await correctCodition.validateAsync(req.body, {
+      abortEarly: false,
+      allowUnknown: true,
+    });
+    // validate dữ liệu hợp lệ cho request đi tếp đến controller
+    next();
+  } catch (error) {
+    next(
+      new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message)
+    );
+  }
+};
+export const columnsValidation = { createNew, update };
