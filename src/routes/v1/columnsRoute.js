@@ -5,4 +5,6 @@ const Router = express.Router();
 
 Router.route('/').post(columnsValidation.createNew, columnController.createNew);
 
+Router.route('/:id').put(columnsValidation.update, columnController.update);
+
 export const columnsRoute = Router;

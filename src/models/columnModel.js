@@ -22,6 +22,9 @@ const COLUMN_COLLECTION_SCHEMA = Joi.object({
   _destroy: Joi.boolean().default(false),
 });
 
+// không cho phép cập nhật
+const INVALID_UPDATE_FIELDS = ['_id', 'createdAt', 'boardId'];
+
 const validateBeforCreate = async (data) => {
   return await COLUMN_COLLECTION_SCHEMA.validateAsync(data, {
     abortEarly: false,
@@ -31,10 +34,14 @@ const validateBeforCreate = async (data) => {
 const createNew = async (data) => {
   try {
     const validData = await validateBeforCreate(data);
-    const createBoard = await GET_DB()
+    const newColumnToAdd = {
+      ...validData,
+      boardId: new ObjectId(validData.boardId),
+    };
+    const createColumn = await GET_DB()
       .collection(COLUMN_COLLECTION_NAME)
-      .insertOne(validData);
-    return createBoard;
+      .insertOne(newColumnToAdd);
+    return createColumn;
   } catch (error) {
     throw new Error(error);
   }
@@ -53,9 +60,71 @@ const findOneById = async (id) => {
   }
 };
 
+// push giá trị columnId vào cuối mảng columnOrderIds
+const pushCardOrderIds = async (card) => {
+  try {
+    const result = await GET_DB()
+      .collection(COLUMN_COLLECTION_NAME)
+      .findOneAndUpdate(
+        {
+          _id: new ObjectId(card.columnId),
+        },
+        {
+          // thêm dữ liệu vào columnOrderIds
+          $push: { cardOrderIds: new ObjectId(card._id) },
+        },
+        {
+          // trả bản ghi mới nhất khi cập nhật
+          returnDocument: 'after',
+        }
+      );
+
+    return result;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+const update = async (columnId, updateData) => {
+  // lọc những field mà ta k cho cập nhật linh tinh
+  Object.keys(updateData).forEach((fieldName) => {
+    if (INVALID_UPDATE_FIELDS.includes(fieldName)) delete updateData[fieldName];
+  });
+  // Đối với  những dữ liệu liên quan Object Id
+  if (updateData.cardOrderIds) {
+    updateData.cardOrderIds = updateData.cardOrderIds.map(
+      (_id) => new ObjectId(_id)
+    );
+  }
+
+  try {
+    const result = await GET_DB()
+      .collection(COLUMN_COLLECTION_NAME)
+      .findOneAndUpdate(
+        {
+          _id: new ObjectId(columnId),
+        },
+        {
+          // thêm dữ liệu vào cardOrderIds
+          $set: updateData,
+        },
+        {
+          // trả bản ghi mới nhất khi cập nhật
+          returnDocument: 'after',
+        }
+      );
+
+    return result;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 export const columnModel = {
   COLUMN_COLLECTION_NAME,
   COLUMN_COLLECTION_SCHEMA,
   findOneById,
   createNew,
+  pushCardOrderIds,
+  update,
 };

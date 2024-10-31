@@ -1,5 +1,6 @@
 /* eslint-disable no-useless-catch */
 import { cardModel } from '~/models/cardModel';
+import { columnModel } from '~/models/columnModel';
 
 const createNew = async (reqBody) => {
   try {
@@ -8,6 +9,11 @@ const createNew = async (reqBody) => {
     };
     const createCard = await cardModel.createNew(newCard);
     const getNewCard = await cardModel.findOneById(createCard.insertedId);
+
+    if (getNewCard) {
+      // cập nhật mảng cardOrderIds trong collection column
+      await columnModel.pushCardOrderIds(getNewCard);
+    }
     return getNewCard;
   } catch (error) {
     throw error;

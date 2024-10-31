@@ -7,7 +7,6 @@ const createNew = async (req, res, next) => {
   try {
     // điều hướng dữ liệu sang services để xữ lý logic
     const createBoard = await boardService.createNew(req.body);
-    console.log(createBoard);
     //Có kết quả thì trả về phía client
     res.status(StatusCodes.CREATED).json(createBoard);
   } catch (error) {
@@ -28,4 +27,26 @@ const getDetails = async (req, res, next) => {
   }
 };
 
-export const boardController = { createNew, getDetails };
+const update = async (req, res, next) => {
+  try {
+    const boardId = req.params.id;
+    const updatedBoard = await boardService.update(boardId, req.body);
+    res.status(StatusCodes.OK).json(updatedBoard);
+  } catch (error) {
+    next(error);
+  }
+};
+const moveCardToDifferentColumn = async (req, res, next) => {
+  try {
+    const result = await boardService.moveCardToDifferentColumn(req.body);
+    res.status(StatusCodes.OK).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+export const boardController = {
+  createNew,
+  getDetails,
+  update,
+  moveCardToDifferentColumn,
+};
