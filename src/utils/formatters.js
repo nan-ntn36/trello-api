@@ -1,3 +1,5 @@
+import { pick } from 'lodash';
+
 // conver to slug
 export const slugify = (val) => {
   if (!val) return '';
@@ -9,4 +11,19 @@ export const slugify = (val) => {
     .replace(/[^a-z0-9 -]/g, '') // remove non-alphanumeric characters
     .replace(/\s+/g, '-') // replace spaces with hyphens
     .replace(/-+/g, '-'); // remove consecutive hyphens
+};
+
+// lấy ra thông tin cần thiết
+export const pickUser = (user) => {
+  if (!user) return {};
+  return pick(user, [
+    '_id',
+    'email',
+    'username',
+    'displayname',
+    'avatar',
+    'role',
+    'isActive',
+    'createdAt',
+  ]);
 };
