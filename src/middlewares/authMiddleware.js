@@ -27,7 +27,7 @@ const isAuthorize = async (req, res, next) => {
     next();
   } catch (error) {
     // nếu cái accessToken nó bị hết hạn thì trả về mã lỗi cho FE để gọi api refreshToken
-    if (error?.messae?.includes('jwt expired')) {
+    if (error?.message?.includes('jwt expired')) {
       next(new ApiError(StatusCodes.GONE, 'Need to refresh token'));
       return;
     }
