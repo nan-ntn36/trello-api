@@ -69,4 +69,25 @@ const login = async (req, res, next) => {
     );
   }
 };
-export const userValidation = { createNew, verifyAccount, login };
+
+const update = async (req, res, next) => {
+  const correctCodition = Joi.object({
+    displayname: Joi.string().trim().strict(),
+    current_password: Joi.string()
+      .pattern(PASSWORD_RULE)
+      .message(`current_password ${PASSWORD_RULE_MESSAGE}`),
+    new_password: Joi.string()
+      .pattern(PASSWORD_RULE)
+      .message(`new_password ${PASSWORD_RULE_MESSAGE}`),
+  });
+
+  try {
+    await correctCodition.validateAsync(req.body, { abortEarly: false });
+    next();
+  } catch (error) {
+    next(
+      new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message)
+    );
+  }
+};
+export const userValidation = { createNew, verifyAccount, login, update };
