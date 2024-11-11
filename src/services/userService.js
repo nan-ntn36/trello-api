@@ -131,7 +131,7 @@ const refreshToken = async (clientRefreshToken) => {
   }
 };
 
-const update = async (userId, reqBody) => {
+const update = async (userId, reqBody, userAvatarFile) => {
   try {
     const existUser = await userModel.findOneById(userId);
     if (!existUser)
@@ -152,6 +152,8 @@ const update = async (userId, reqBody) => {
       updateUser = await userModel.update(existUser._id, {
         password: bcryptjs.hashSync(reqBody.new_password, 8),
       });
+    } else if (userAvatarFile) {
+      // upload file lên cloudary
     } else {
       updateUser = await userModel.update(existUser._id, reqBody);
     }
