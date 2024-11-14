@@ -39,12 +39,15 @@ const validateBeforCreate = async (data) => {
   });
 };
 
-const createNew = async (data) => {
+const createNew = async (userId, data) => {
   try {
     const validData = await validateBeforCreate(data);
+    const newBoardToAdd = { ...validData,
+      ownerIds: [new ObjectId(userId)]
+    }
     const createBoard = await GET_DB()
       .collection(BOARD_COLLECTION_NAME)
-      .insertOne(validData);
+      .insertOne(newBoardToAdd);
     return createBoard;
   } catch (error) {
     throw new Error(error);
@@ -65,7 +68,7 @@ const findOneById = async (id) => {
 };
 
 // getBoard
-const getDetails = async (id) => {
+const getDetails = async (userId, boardId) => {
   try {
     // trả bản dữ liệu về
     // const result = await GET_DB()
@@ -73,16 +76,20 @@ const getDetails = async (id) => {
     //   .findOne({
     //     _id: new ObjectId(id),
     //   });
+    const queryConditions = [
+      { _id: new ObjectId(boardId) },
+      { _destroy: false },
+      {
+        $or: [
+          { ownerIds: { $all: [new ObjectId(userId)] } },
+          { memberIds: { $all: [new ObjectId(userId)] } },
+        ],
+      },
+    ];
     const result = await GET_DB()
       .collection(BOARD_COLLECTION_NAME)
       .aggregate([
-        {
-          $match: {
-            // điều kiện query
-            _id: new ObjectId(id),
-            _destroy: false,
-          },
-        },
+        { $match: { $and: queryConditions } },
         {
           $lookup: {
             from: columnModel.COLUMN_COLLECTION_NAME,
