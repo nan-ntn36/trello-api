@@ -20,4 +20,14 @@ const createNew = async (reqBody) => {
   }
 };
 
-export const cardService = { createNew };
+const update = async (cardId, reqBody) => {
+  try {
+    const updateData = { ...reqBody, updatedAt: Date.now() };
+    const updateCard = await cardModel.update(cardId, updateData);
+
+    return updateCard;
+  } catch (error) {
+    throw error;
+  }
+};
+export const cardService = { createNew, update };

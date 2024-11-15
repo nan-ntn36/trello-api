@@ -10,4 +10,10 @@ Router.route('/').post(
   cardController.createNew
 );
 
+Router.route('/:id')
+  .put(
+    authMiddleware.isAuthorize,
+    cardsValidation.update,
+    cardController.update
+  )
 export const cardsRoute = Router;
