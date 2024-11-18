@@ -5,8 +5,9 @@ import { boardService } from '~/services/boardService';
 
 const createNew = async (req, res, next) => {
   try {
+    const userId = req.jwtDecoded._id;
     // điều hướng dữ liệu sang services để xữ lý logic
-    const createBoard = await boardService.createNew(req.body);
+    const createBoard = await boardService.createNew(userId, req.body);
     //Có kết quả thì trả về phía client
     res.status(StatusCodes.CREATED).json(createBoard);
   } catch (error) {
@@ -18,8 +19,22 @@ const createNew = async (req, res, next) => {
 
 const getDetails = async (req, res, next) => {
   try {
+    const userId = req.jwtDecoded._id;
     const boardId = req.params.id;
-    const board = await boardService.getDetails(boardId);
+    const board = await boardService.getDetails(userId, boardId);
+
+    res.status(StatusCodes.OK).json(board);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getBoards = async (req, res, next) => {
+  try {
+    const userId = req.jwtDecoded._id;
+    // page và  itemsPerPage được truyên vào trong query url từ phía FE nên BE sẽ lấy thông qua req.body
+    const { page, itemsPerpage } = req.query;
+    const board = await boardService.getBoards(userId, page, itemsPerpage);
 
     res.status(StatusCodes.OK).json(board);
   } catch (error) {
@@ -49,4 +64,5 @@ export const boardController = {
   getDetails,
   update,
   moveCardToDifferentColumn,
+  getBoards,
 };

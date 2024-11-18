@@ -3,17 +3,18 @@ import { slugify } from '~/utils/formatters';
 import { boardModel } from '~/models/boardModel';
 import ApiError from '~/utils/ApiError';
 import { StatusCodes } from 'http-status-codes';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, parseInt } from 'lodash';
 import { columnModel } from '~/models/columnModel';
 import { cardModel } from '~/models/cardModel';
+import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '~/utils/constants';
 
-const createNew = async (reqBody) => {
+const createNew = async (userId, reqBody) => {
   try {
     const newBoard = {
       ...reqBody,
       slug: slugify(reqBody.title),
     };
-    const createBoard = await boardModel.createNew(newBoard);
+    const createBoard = await boardModel.createNew(userId, newBoard);
     // trong service luôn phải có return
     const getNewBoard = await boardModel.findOneById(createBoard.insertedId);
 
@@ -23,10 +24,25 @@ const createNew = async (reqBody) => {
   }
 };
 
-const getDetails = async (boardId) => {
+const getBoards = async (userId, page, itemsPerPage) => {
+  try {
+    if (!page) page = DEFAULT_PAGE;
+    if (!itemsPerPage) itemsPerPage = DEFAULT_ITEMS_PER_PAGE;
+    const results = await boardModel.getBoards(
+      userId,
+      parseInt(page, 10),
+      parseInt(itemsPerPage, 10)
+    );
+    return results;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getDetails = async (userId, boardId) => {
   try {
     // trong service luôn phải có return
-    const board = await boardModel.getDetails(boardId);
+    const board = await boardModel.getDetails(userId, boardId);
     if (!board) throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found!');
 
     // clone ra 1 mảng mới không ảnh hưởng đến dữ liệu ban đầu
@@ -91,4 +107,5 @@ export const boardService = {
   getDetails,
   update,
   moveCardToDifferentColumn,
+  getBoards,
 };

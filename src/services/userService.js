@@ -9,6 +9,7 @@ import { WEBSITE_DOMAIN } from '~/utils/constants';
 import { BrevoProvider } from '~/providers/BrevoProvider';
 import { env } from '~/config/environment';
 import { JwtProvider } from '~/providers/JwtProvider';
+import { CloudinaryProvider } from '~/providers/CloudinaryProvider';
 
 const createNew = async (reqBody) => {
   try {
@@ -154,6 +155,14 @@ const update = async (userId, reqBody, userAvatarFile) => {
       });
     } else if (userAvatarFile) {
       // upload file lên cloudary
+      const uploadResult = await CloudinaryProvider.streamUpload(
+        userAvatarFile.buffer,
+        'users'
+      );
+      // lưu lại url (secure_url) trong file ảnh
+      updateUser = await userModel.update(existUser._id, {
+        avatar: uploadResult.secure_url,
+      });
     } else {
       updateUser = await userModel.update(existUser._id, reqBody);
     }
