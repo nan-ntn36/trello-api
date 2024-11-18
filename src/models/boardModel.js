@@ -6,6 +6,7 @@ import { BOARD_TYPES } from '~/utils/constants';
 import { columnModel } from './columnModel';
 import { cardModel } from './cardModel';
 import { pagingSkipValue } from '~/utils/algorithms';
+import { userModel } from './userModel';
 
 // Define collectin schema
 
@@ -104,6 +105,26 @@ const getDetails = async (userId, boardId) => {
             localField: '_id', //là giá trị mà ở bảng hiện hiện tại được đặt làm khóa ngoại ở bảng bên kia
             foreignField: 'boardId', // khóa ngoại bên bảng columns
             as: 'cards',
+          },
+        },
+        {
+          $lookup: {
+            from: userModel.USER_COLLECTION_NAME,
+            localField: 'ownerIds', //là giá trị mà ở bảng hiện hiện tại được đặt làm khóa ngoại ở bảng bên kia
+            foreignField: '_id', // khóa ngoại bên bảng columns
+            as: 'owners',
+            //pipeline trong lookup là để xử lý môt hoặc nhiều luồng cần thiết
+            //$project để chỉ định vài field không muốn lấy về bằng cách gán nó giá trị 0
+            pipeline:[{ $project: { 'password': 0, 'verifyToken': 0 } }]
+          },
+        },
+        {
+          $lookup: {
+            from: userModel.USER_COLLECTION_NAME,
+            localField: 'memberIds', //là giá trị mà ở bảng hiện hiện tại được đặt làm khóa ngoại ở bảng bên kia
+            foreignField: '_id', // khóa ngoại bên bảng columns
+            as: 'members',
+            pipeline:[{ $project: { 'password': 0, 'verifyToken': 0 } }]
           },
         },
       ])
