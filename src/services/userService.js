@@ -85,7 +85,7 @@ const login = async (reqBody) => {
     // Đăng nhập tạo token trả cho FE
     const userInfor = {
       _id: existUser._id,
-      email: existUser._email,
+      email: existUser.email,
     };
     // JWT gồm _id và email
     // tạo ra 2 loại accessToken và refreshToken

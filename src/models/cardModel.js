@@ -114,6 +114,26 @@ const update = async (cardId, updateData) => {
   }
 };
 
+// ta sử dụng  $push: {  } và bọc các phần tử vào comments : { $each: [commentData], $position: 0 } dê thêm vào đâu mảng
+const unshiftNewComment = async (cardId, commentData) => {
+  try {
+    const result = await GET_DB().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
+      {
+        _id: new ObjectId(cardId)
+      },
+      {
+        $push: { comments : { $each: [commentData], $position: 0 } }
+      },
+      {
+        returnDocument: 'after'
+      }
+    )
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const cardModel = {
   CARD_COLLECTION_NAME,
   CARD_COLLECTION_SCHEMA,
@@ -121,4 +141,5 @@ export const cardModel = {
   findOneById,
   update,
   deleteManyByColumnId,
+  unshiftNewComment
 };
