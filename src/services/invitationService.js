@@ -54,7 +54,16 @@ const createNewBoardInvitation = async (reqBody, invitedId) => {
     throw error;
   }
 };
+const getInvitations = async (userId) => {
+  try {
+    const getInvitation = await invitationModel.findByUser(userId);
+    return getInvitation;
+  } catch (error) {
+    throw error;
+  }
+};
 
 export const invitationService = {
   createNewBoardInvitation,
+  getInvitations,
 };

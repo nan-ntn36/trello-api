@@ -7,9 +7,12 @@ const Router = express.Router();
 Router.route('/board').post(
   authMiddleware.isAuthorize,
   invitationValidation.createNewBoardInvitation,
-  invitationController.createNewBoardInvitation,
-
+  invitationController.createNewBoardInvitation
 );
-
+// get invitations user
+Router.route('/').get(
+  authMiddleware.isAuthorize,
+  invitationController.getInvitations
+);
 
 export const invitationRoute = Router;
