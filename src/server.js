@@ -9,6 +9,8 @@ import { APIs_V1 } from '~/routes/v1';
 import { corsOptions } from './config/cors';
 import { errorHandlingMiddleware } from '~/middlewares/errorHandlingMiddleware';
 import cookieParser from 'cookie-parser';
+import socketIo from 'socket.io';
+import http from 'http';
 
 const START_SERVER = () => {
   const app = express();
@@ -30,15 +32,30 @@ const START_SERVER = () => {
 
   //middleware xữ lý lỗi tập trung
   app.use(errorHandlingMiddleware);
+
+  // Tạo server mới bọc thằng app của express để làm real time của socketIO
+  const server = http.createServer(app);
+  //khỏi tạo biến IO với sever và cors
+  const io = socketIo(server, { cors: corsOptions });
+  // eslint-disable-next-line no-unused-vars
+  io.on('connection', (socket) => {
+    console.log('a user connected');
+    // lắng nghe sự kiện FE gửi lên
+    socket.on('FE_USER_INVITED_TO_BOARD', (invitation) => {
+      //cách làm nhanh nhát : emit ngược lại một sự kiện về cho phía client khác (ngoại trừ cái chính thằng gửi request lên)
+      socket.broadcast.emit('BE_USER_INVITED_TO_BOARD', invitation);
+    });
+  });
+  // dùng server.listen thay cho app.listen
   //  môi trường production đang support
   if (env.BUILD_MODE === 'production') {
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
       // eslint-disable-next-line no-console
       console.log(` Production ,I am running at ${process.env.PORT}/ `);
     });
   } else {
     // mt local dev
-    app.listen(env.LOCAL_DEV_APP_PORT, env.LOCAL_DEV_APP_HOST, () => {
+    server.listen(env.LOCAL_DEV_APP_PORT, env.LOCAL_DEV_APP_HOST, () => {
       // eslint-disable-next-line no-console
       console.log(
         `Hello ${env.AUTHOR}, I am running at ${env.LOCAL_DEV_APP_HOST}:${env.LOCAL_DEV_APP_PORT}/ `

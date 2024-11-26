@@ -89,6 +89,8 @@ const update = async (invitationId, updateData) => {
       }
     });
 
+    ///biến đổi dự liệu thành Object Id
+
     if (updateData.boardInvitation) {
       updateData.boardInvitation = {
         ...updateData.boardInvitation,
