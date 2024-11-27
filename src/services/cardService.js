@@ -24,7 +24,7 @@ const createNew = async (reqBody) => {
 const update = async (cardId, reqBody, cardCoverFile, userInfo) => {
   try {
     const updateData = { ...reqBody, updatedAt: Date.now() };
-    let updatedCard = {}
+    let updatedCard = {};
     if (cardCoverFile) {
       const uploadResult = await CloudinaryProvider.streamUpload(
         cardCoverFile.buffer,
@@ -40,11 +40,16 @@ const update = async (cardId, reqBody, cardCoverFile, userInfo) => {
         ...updateData.commentToAdd,
         commentedAt: Date.now(),
         userId: userInfo._id,
-        userEmail: userInfo.email
-      }
-      updatedCard = await cardModel.unshiftNewComment(cardId, commentData)
-    }
-    else {
+        userEmail: userInfo.email,
+      };
+      updatedCard = await cardModel.unshiftNewComment(cardId, commentData);
+    } else if (updateData.incomingMemberinfo) {
+      // add hoặc remove ra khỏi card
+      updatedCard = await cardModel.updateMembers(
+        cardId,
+        updateData.incomingMemberinfo
+      );
+    } else {
       updatedCard = await cardModel.update(cardId, updateData);
     }
 
