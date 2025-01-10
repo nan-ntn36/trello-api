@@ -159,6 +159,31 @@ const pushColumnOrderIds = async (column) => {
     throw new Error(error);
   }
 };
+
+// push giá trị userId vào cuối mảng memberIds
+const pushMemberIds = async (boarId, userId) => {
+  try {
+    const result = await GET_DB()
+      .collection(BOARD_COLLECTION_NAME)
+      .findOneAndUpdate(
+        {
+          _id: new ObjectId(boarId),
+        },
+        {
+          // thêm dữ liệu vào memberIds
+          $push: { memberIds: new ObjectId(userId) },
+        },
+        {
+          // trả bản ghi mới nhất khi cập nhật
+          returnDocument: 'after',
+        }
+      );
+
+    return result;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
 // lấy 1 phần tử columnId ra khỏi mảng columnsOrderIds
 // dùng $pull trong mongodbở trường hợp này để lấy một phần tử ra khỏi mảng r xóa nó đi
 const pullColumnOrderIds = async (column) => {
@@ -274,4 +299,5 @@ export const boardModel = {
   update,
   pullColumnOrderIds,
   getBoards,
+  pushMemberIds
 };

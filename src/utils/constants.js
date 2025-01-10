@@ -24,5 +24,9 @@ export const INVITATION_TYPES = {
 export const BOARD_INVITATION_STATUS = {
   PENDING: 'PENDING',
   ACCEPTED: 'ACCEPTED',
-  REJECT: 'REJECT',
+  REJECTED: 'REJECTED',
+};
+export const CARD_MEMBER_ACTION = {
+  ADD: 'ADD',
+  REMOVE: 'REMOVE',
 };
