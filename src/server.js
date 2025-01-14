@@ -11,10 +11,12 @@ import { errorHandlingMiddleware } from '~/middlewares/errorHandlingMiddleware';
 import cookieParser from 'cookie-parser';
 import socketIo from 'socket.io';
 import http from 'http';
+import swaggerUi from 'swagger-ui-express';
+import mergedSwafferSpec from '~/config/swaggerOptions'
+
 
 const START_SERVER = () => {
   const app = express();
-
   // Fix cache from dick của express
   app.use((req, res, next) => {
     res.set('Cache-Control', 'no-store');
@@ -26,13 +28,13 @@ const START_SERVER = () => {
   app.use(cors(corsOptions));
   //bật request json body data
   app.use(express.json());
-
+  // swagger
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(mergedSwafferSpec));
   // sử dụng api v1
   app.use('/v1', APIs_V1);
 
   //middleware xữ lý lỗi tập trung
   app.use(errorHandlingMiddleware);
-
   // Tạo server mới bọc thằng app của express để làm real time của socketIO
   const server = http.createServer(app);
   //khỏi tạo biến IO với sever và cors

@@ -1,0 +1,146 @@
+openapi: 3.0.0
+info:
+  title: Your API Name
+  description: A brief description of your API
+  version: 1.0.0
+servers:
+  - url: ''
+tags:
+  - name: users
+    description: API users
+  - name: boards
+    description: API boards
+paths:
+  /v1/users/login:
+    post:
+      tags:
+        - users
+      summary: Đăng nhập
+      description: Đăng nhập vào hệ thống
+      operationId: Login
+      requestBody:
+        description: Login
+        content:
+          application/json:
+            schema:
+             $ref: '#/components/schemas/loginBody'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessAuthentication'
+      security:
+        - petstore_auth:
+            - write:pets
+            - read:pets
+  /v1/boards:
+     get:
+       tags:
+        - boards
+       summary: Get boards 
+       description: ''
+       operationId: getListBoard
+       security:
+         - BearerAuth: []
+       responses:
+        default:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/boardResult'      
+components:
+  schemas:
+    loginBody:
+      type: object
+      properties:
+        email:
+          type: string
+          example: ntrungnghia102@gmail.com
+        password:
+          type: string
+          example: 123456789Aa
+    SuccessAuthentication:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: MongoId
+          example: 6783c084e6a07943853317fb
+        email:
+          type: string
+          example: email@123
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzgzYzA4NGU2YTA3OTQzODUzMzE3ZmIiLCJlbWFpbCI6Im50cnVuZ25naGlhMTAyQGdtYWlsLmNvbSIsImlhdCI6MTczNjgzNzM5NSwiZXhwIjoxNzM2ODQwOTk1fQ.JHCyWTDD8JbYgUnN8F-Yn_uo4fAOTUp5BPPGl4m0rEg
+        refreshToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzgzYzA4NGU2YTA3OTQzODUzMzE3ZmIiLCJlbWFpbCI6Im50cnVuZ25naGlhMTAyQGdtYWlsLmNvbSIsImlhdCI6MTczNjgzNzM5NSwiZXhwIjoxNzM2ODQwOTk1fQ.JHCyWTDD8JbYgUnN8F-Yn_uo4fAOTUp5BPPGl4m0rEg
+        username:
+          type: string
+          example: ntrungnghia102
+        displayname:
+          type: string
+          example: ntrungnghia102
+        avatar:
+          type: string
+          example: https://res.cloudinary.com/dkvpqak9l/image/upload/v1736688185/users/q8hb9s6m0bfjxjhfqx0i.jpg
+        role:
+          type: string
+        isActive:
+          type: boolean
+    boardResult:
+      type: object
+      properties:
+         boards: 
+          type: object
+          properties:
+            _id: 
+              type: string
+              format: MongoId
+              example: "6783c1b6e6a07943853317fc"
+            title: 
+               type: string
+               example: "TestBoard"
+            description: 
+                 type: string
+                 example: "TestBoard"
+            type: 
+                type: string
+                example: "public"
+            slug: 
+              type: string
+              example: "testboard"
+            columnOrderIds:
+               type: array
+               items:
+                    type: string
+                    format: MongoId
+                    example: ["6783c21de6a07943853317ff"]
+            ownerIds: 
+              type: array
+              items:
+                    type: string
+                    format: MongoId
+                    example: ["6783c21de6a07943853317ff"]
+            memberIds: 
+              type: array
+              items:
+                    type: string
+                    format: MongoId
+                    example: ["6783c21de6a07943853317ff"]
+            _destroy:
+                type: boolean
+                example: "testboard"
+         toltalBoards:
+               type: integer
+               example: 1
+  securitySchemes:
+    BearerAuth:
+     type: http
+     scheme: bearer
+     bearerFormat: JWT
+
