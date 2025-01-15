@@ -41,6 +41,7 @@ const createNew = async (reqBody) => {
     `;
     //Gọi tới Provider gửi mail
     await BrevoProvider.sendEmail(getNewUser.email, custumSubject, htmlContent);
+    //test trên post man  return getNewUser;
     return pickUser(getNewUser);
   } catch (error) {
     throw error;
