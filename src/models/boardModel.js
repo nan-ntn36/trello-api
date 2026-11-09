@@ -43,9 +43,7 @@ const validateBeforCreate = async (data) => {
 const createNew = async (userId, data) => {
   try {
     const validData = await validateBeforCreate(data);
-    const newBoardToAdd = { ...validData,
-      ownerIds: [new ObjectId(userId)]
-    }
+    const newBoardToAdd = { ...validData, ownerIds: [new ObjectId(userId)] };
     const createBoard = await GET_DB()
       .collection(BOARD_COLLECTION_NAME)
       .insertOne(newBoardToAdd);
@@ -115,7 +113,7 @@ const getDetails = async (userId, boardId) => {
             as: 'owners',
             //pipeline trong lookup là để xử lý môt hoặc nhiều luồng cần thiết
             //$project để chỉ định vài field không muốn lấy về bằng cách gán nó giá trị 0
-            pipeline:[{ $project: { 'password': 0, 'verifyToken': 0 } }]
+            pipeline: [{ $project: { password: 0, verifyToken: 0 } }],
           },
         },
         {
@@ -124,7 +122,7 @@ const getDetails = async (userId, boardId) => {
             localField: 'memberIds', //là giá trị mà ở bảng hiện hiện tại được đặt làm khóa ngoại ở bảng bên kia
             foreignField: '_id', // khóa ngoại bên bảng columns
             as: 'members',
-            pipeline:[{ $project: { 'password': 0, 'verifyToken': 0 } }]
+            pipeline: [{ $project: { password: 0, verifyToken: 0 } }],
           },
         },
       ])
@@ -151,7 +149,7 @@ const pushColumnOrderIds = async (column) => {
         {
           // trả bản ghi mới nhất khi cập nhật
           returnDocument: 'after',
-        }
+        },
       );
 
     return result;
@@ -176,7 +174,7 @@ const pushMemberIds = async (boarId, userId) => {
         {
           // trả bản ghi mới nhất khi cập nhật
           returnDocument: 'after',
-        }
+        },
       );
 
     return result;
@@ -201,7 +199,7 @@ const pullColumnOrderIds = async (column) => {
         {
           // trả bản ghi mới nhất khi cập nhật
           returnDocument: 'after',
-        }
+        },
       );
 
     return result;
@@ -218,7 +216,7 @@ const update = async (boardId, updateData) => {
 
   if (updateData.columnOrderIds) {
     updateData.columnOrderIds = updateData.columnOrderIds.map(
-      (_id) => new ObjectId(_id)
+      (_id) => new ObjectId(_id),
     );
   }
   try {
@@ -235,7 +233,7 @@ const update = async (boardId, updateData) => {
         {
           // trả bản ghi mới nhất khi cập nhật
           returnDocument: 'after',
-        }
+        },
       );
 
     return result;
@@ -244,7 +242,7 @@ const update = async (boardId, updateData) => {
   }
 };
 
-const getBoards = async (userId, page, itemsPerPage) => {
+const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
   try {
     const queryConditions = [
       //Điều kiện 1 board chưa xóa
@@ -257,34 +255,56 @@ const getBoards = async (userId, page, itemsPerPage) => {
         ],
       },
     ];
+
+    // xử lý queryFilters cho từng trường hợp search broads
+    if (queryFilters) {
+      Object.keys(queryFilters).forEach((key) => {
+        // có phân biệt chữ hoa và chữ thường
+        const fieldValue = queryFilters[key];
+        if (fieldValue) {
+          // có phân biệt chữ hoa và chữ thường
+          // queryConditions.push({
+          //   [key]: { $regex: fieldValue },
+          // });
+
+          // không phân biet chữ hoa và chữ thường
+          queryConditions.push({
+            [key]: { $regex: new RegExp(fieldValue, 'i') },
+          });
+        }
+      });
+    }
     const query = await GET_DB()
       .collection(BOARD_COLLECTION_NAME)
-      .aggregate([
-        { $match: { $and: queryConditions } },
-        //sort title của board theo A- Z (mặc định sẽ bị chữ B đứng trước  chữ a thường theo chuẩn ASCII)
-        { $sort: { title: 1 } },
-        // $facet để xử lý nhiều luồn trong 1 query
-        {
-          $facet: {
-            // luốn thứ 1 là Query boards
-            'queryBoards': [
-              { $skip: pagingSkipValue(page, itemsPerPage) }, // bỏ qua số lượng bản ghi của những page trước đó
-              { $limit: itemsPerPage }], //giới hạn tối đa số lượng bản ghi trả về trên 1 page
-            // Luồn thứ 2 query đến tổng số lượng bản ghi boards
-            'queryTotalBoards': [{ $count: 'countedAllBoards' }],
+      .aggregate(
+        [
+          { $match: { $and: queryConditions } },
+          //sort title của board theo A- Z (mặc định sẽ bị chữ B đứng trước  chữ a thường theo chuẩn ASCII)
+          { $sort: { title: 1 } },
+          // $facet để xử lý nhiều luồn trong 1 query
+          {
+            $facet: {
+              // luốn thứ 1 là Query boards
+              queryBoards: [
+                { $skip: pagingSkipValue(page, itemsPerPage) }, // bỏ qua số lượng bản ghi của những page trước đó
+                { $limit: itemsPerPage },
+              ], //giới hạn tối đa số lượng bản ghi trả về trên 1 page
+              // Luồn thứ 2 query đến tổng số lượng bản ghi boards
+              queryTotalBoards: [{ $count: 'countedAllBoards' }],
+            },
           },
+        ],
+        {
+          // khai báo thuộc tính collation locale 'en' để fix vụ chữ B hoa và chữ a thường ở trên
+          collation: { locale: 'en' },
         },
-      ],
-      {
-        // khai báo thuộc tính collation locale 'en' để fix vụ chữ B hoa và chữ a thường ở trên
-        collation: { locale : 'en' }
-      }
-      ).toArray();
+      )
+      .toArray();
     const res = query[0];
     return {
-      boards:res.queryBoards || [],
-      toltalBoards:res.queryTotalBoards[0]?.countedAllBoards || 0
-    }
+      boards: res.queryBoards || [],
+      toltalBoards: res.queryTotalBoards[0]?.countedAllBoards || 0,
+    };
   } catch (error) {
     throw new Error(error);
   }
@@ -299,5 +319,5 @@ export const boardModel = {
   update,
   pullColumnOrderIds,
   getBoards,
-  pushMemberIds
+  pushMemberIds,
 };

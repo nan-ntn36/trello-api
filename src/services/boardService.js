@@ -24,14 +24,15 @@ const createNew = async (userId, reqBody) => {
   }
 };
 
-const getBoards = async (userId, page, itemsPerPage) => {
+const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
   try {
     if (!page) page = DEFAULT_PAGE;
     if (!itemsPerPage) itemsPerPage = DEFAULT_ITEMS_PER_PAGE;
     const results = await boardModel.getBoards(
       userId,
       parseInt(page, 10),
-      parseInt(itemsPerPage, 10)
+      parseInt(itemsPerPage, 10),
+      queryFilters,
     );
     return results;
   } catch (error) {
@@ -56,7 +57,7 @@ const getDetails = async (userId, boardId) => {
 
       // cách 2: dùng .equals này là bởi vì dữ liệu của ta đều là ObjectId nên là thằng mongoDb có support hàm .equals (mongodb) này.
       column.cards = resBoard.cards.filter((card) =>
-        card.columnId.equals(column._id)
+        card.columnId.equals(column._id),
       );
     });
     // Xóa đi mảng cards nằm cùng cấp với columns
